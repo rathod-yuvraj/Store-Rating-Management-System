@@ -1,28 +1,38 @@
 const router =
 require("express").Router();
 
-const store =
+const storeController =
 require("../controllers/storeController");
 
 const auth =
 require("../middleware/authMiddleware");
 
+const role =
+require("../middleware/roleMiddleware");
+
+
+
 router.get(
   "/all",
   auth,
-  store.getAllStores
+  storeController.getAllStores
 );
+
+
 
 router.get(
   "/search",
   auth,
-  store.searchStore
+  storeController.searchStore
 );
+
+
 
 router.get(
   "/owner-dashboard",
   auth,
-  store.ownerDashboard
+  role("STORE_OWNER"),
+  storeController.ownerDashboard
 );
 
 module.exports = router;

@@ -1,59 +1,170 @@
+const { Op } = require("sequelize");
+
 const {
   User,
   Store,
   Rating
 } = require("../models");
 
-/*
-=================================
-All Stores
-=================================
-*/
+
 
 exports.getAllStores =
 async (req, res) => {
 
   try {
 
+    const {
+      page = 1,
+      limit = 10
+    } = req.query;
+
     const stores =
-      await Store.findAll({
-        include: [Rating]
+      await Store.findAndCountAll({
+
+        include: [
+          {
+            model: Rating,
+            attributes: ["rating"]
+          }
+        ],
+
+        limit:
+          Number(limit),
+
+        offset:
+          (page - 1) * limit
       });
 
     const response =
-      stores.map(store => {
+      stores.rows.map(store => {
 
-        let avg = 0;
+        const ratings =
+          store.Ratings || [];
 
-        if (
-          store.Ratings &&
-          store.Ratings.length > 0
-        ) {
-
-          avg =
-            store.Ratings.reduce(
-              (sum, r) =>
-                sum + r.rating,
-              0
-            ) /
-            store.Ratings.length;
-        }
+        const averageRating =
+          ratings.length > 0
+            ? (
+                ratings.reduce(
+                  (sum, r) =>
+                    sum + r.rating,
+                  0
+                ) / ratings.length
+              ).toFixed(2)
+            : "0.00";
 
         return {
+
           id: store.id,
           name: store.name,
+          email: store.email,
           address: store.address,
-          averageRating:
-            avg.toFixed(1)
+          averageRating
         };
       });
 
-    res.json(response);
+    res.json({
 
-  } catch (err) {
+      total:
+        stores.count,
+
+      page:
+        Number(page),
+
+      totalPages:
+        Math.ceil(
+          stores.count /
+          limit
+        ),
+
+      stores:
+        response
+    });
+
+  } catch (error) {
 
     res.status(500).json({
-      message: err.message
+      message:
+        error.message
+    });
+
+  }
+};
+
+exports.ownerDashboard =
+async (req, res) => {
+
+  try {
+
+    const store =
+      await Store.findOne({
+
+        where: {
+          ownerId:
+            req.user.id
+        }
+      });
+
+    if (!store) {
+
+      return res.status(404).json({
+        message:
+          "Store not found"
+      });
+
+    }
+
+    const ratings =
+      await Rating.findAll({
+
+        where: {
+          StoreId:
+            store.id
+        },
+
+        include: [
+          {
+            model: User,
+            attributes: [
+              "id",
+              "name",
+              "email"
+            ]
+          }
+        ]
+      });
+
+    const averageRating =
+      ratings.length > 0
+        ? (
+            ratings.reduce(
+              (sum, r) =>
+                sum + r.rating,
+              0
+            ) / ratings.length
+          ).toFixed(2)
+        : "0.00";
+
+    res.json({
+
+      storeId:
+        store.id,
+
+      storeName:
+        store.name,
+
+      averageRating,
+
+      totalRatings:
+        ratings.length,
+
+      ratings
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      message:
+        error.message
     });
 
   }
@@ -71,16 +182,14 @@ async (req, res) => {
   try {
 
     const {
-      Op
-    } = require("sequelize");
-
-    const {
       name,
-      address
+      address,
+      page = 1,
+      limit = 10
     } = req.query;
 
     const stores =
-      await Store.findAll({
+      await Store.findAndCountAll({
 
         where: {
 
@@ -97,92 +206,72 @@ async (req, res) => {
                 `%${address}%`
             }
           })
-        }
-      });
-
-    res.json(stores);
-
-  } catch (err) {
-
-    res.status(500).json({
-      message: err.message
-    });
-
-  }
-};
-
-/*
-=================================
-Store Owner Dashboard
-=================================
-*/
-
-exports.ownerDashboard =
-async (req, res) => {
-
-  try {
-
-    const store =
-      await Store.findOne({
-        where: {
-          ownerId:
-            req.user.id
-        }
-      });
-
-    if (!store)
-      return res.status(404).json({
-        message:
-          "Store not assigned"
-      });
-
-    const ratings =
-      await Rating.findAll({
-
-        where: {
-          StoreId: store.id
         },
 
         include: [
           {
-            model: User,
-            attributes: [
-              "id",
-              "name",
-              "email"
-            ]
+            model: Rating,
+            attributes: ["rating"]
           }
-        ]
+        ],
+
+        limit:
+          Number(limit),
+
+        offset:
+          (page - 1) * limit
       });
 
-    let avg = 0;
+    const response =
+      stores.rows.map(store => {
 
-    if (ratings.length > 0) {
+        const ratings =
+          store.Ratings || [];
 
-      avg =
-        ratings.reduce(
-          (sum, r) =>
-            sum + r.rating,
-          0
-        ) /
-        ratings.length;
-    }
+        const averageRating =
+          ratings.length > 0
+            ? (
+                ratings.reduce(
+                  (sum, r) =>
+                    sum + r.rating,
+                  0
+                ) / ratings.length
+              ).toFixed(2)
+            : "0.00";
+
+        return {
+
+          id: store.id,
+          name: store.name,
+          email: store.email,
+          address: store.address,
+          averageRating
+        };
+      });
 
     res.json({
 
-      storeName:
-        store.name,
+      total:
+        stores.count,
 
-      averageRating:
-        avg.toFixed(2),
+      page:
+        Number(page),
 
-      ratings
+      totalPages:
+        Math.ceil(
+          stores.count /
+          limit
+        ),
+
+      stores:
+        response
     });
 
-  } catch (err) {
+  } catch (error) {
 
     res.status(500).json({
-      message: err.message
+      message:
+        error.message
     });
 
   }
