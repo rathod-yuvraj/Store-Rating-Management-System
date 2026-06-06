@@ -11,7 +11,6 @@ const role =
 require("../middleware/roleMiddleware");
 
 
-
 router.use(auth);
 
 router.use(

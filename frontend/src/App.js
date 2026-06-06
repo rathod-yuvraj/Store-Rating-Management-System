@@ -1,21 +1,22 @@
-import {
-  BrowserRouter
-} from "react-router-dom";
 
-import {
-  AuthProvider
-} from "./context/AuthContext";
+import { BrowserRouter } from "react-router-dom";
 
-import AppRoutes
-from "./routes/AppRoutes";
+import AppRoutes from "./routes/AppRoutes";
+
+import { AuthProvider } from "./context/AuthContext";
+
+import Navbar from "./components/Navbar";
+
+import "./styles.css";
 
 function App() {
 
   return (
-
     <BrowserRouter>
 
       <AuthProvider>
+
+        <Navbar />
 
         <AppRoutes />
 
@@ -26,3 +27,4 @@ function App() {
 }
 
 export default App;
+

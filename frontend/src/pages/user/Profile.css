@@ -1,0 +1,50 @@
+*{
+    box-sizing:border-box;
+}
+
+.profile-container{
+    min-height:100vh;
+    background:#f4f6f9;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+}
+
+.profile-card{
+    width:600px;
+    background:white;
+    padding:30px;
+    border-radius:12px;
+    box-shadow:0 5px 15px rgba(0,0,0,.15);
+}
+
+.profile-card h2{
+    text-align:center;
+    margin-bottom:30px;
+    color:#333;
+}
+
+.profile-item{
+    margin-bottom:20px;
+}
+
+.profile-item label{
+    display:block;
+    font-weight:600;
+    margin-bottom:8px;
+    color:#444;
+}
+
+.profile-item p{
+    background:#f8f9fa;
+    padding:14px;
+    border-radius:6px;
+    color:#555;
+}
+
+.loading{
+    text-align:center;
+    margin-top:100px;
+    font-size:20px;
+}

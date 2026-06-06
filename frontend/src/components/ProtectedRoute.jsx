@@ -1,28 +1,34 @@
-import {
-  Navigate
-} from "react-router-dom";
+import { Navigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
-import {
-  useAuth
-} from "../context/AuthContext";
+export default function ProtectedRoute({
+  children,
+  role,
+}) {
 
-const ProtectedRoute =
-({ children, role }) => {
+  const { user, loading } = useAuth();
 
-  const { user } =
-    useAuth();
+  // Wait until authentication finishes
+  if (loading) {
+    return (
+      <div className="loading">
+        Loading...
+      </div>
+    );
+  }
 
-  if (!user)
-    return <Navigate to="/" />;
+  // User not logged in
+  if (!user) {
+    return <Navigate to="/" replace />;
+  }
 
+  // Role mismatch
   if (
     role &&
     user.role !== role
   ) {
-    return <Navigate to="/" />;
+    return <Navigate to="/" replace />;
   }
 
   return children;
-};
-
-export default ProtectedRoute;
+}
