@@ -1,54 +1,37 @@
+const db = require("../config/db");
+const bcrypt = require("bcryptjs");
 
+exports.register = async (req, res) => {
 
-const login=(req,res)=>{
+    try {
 
-    const user={
-        email:"abc.gmail.com",
-        passowrd:"123456",
-    }
+        const { name, email, password, address } = req.body;
 
-    try{
-        const{email,password}=req.body;
+        const hashedPassword =
+            await bcrypt.hash(password, 10);
 
-        if(!email || !password){
-            return res.status(400)
-            .json({
-                success:false,
-                massage:"Email and password are required",
-            });
-        }
-            if(email!==user.email ||password!==user.password){
-                return res.status(401).
-                joson({
-                    success:false,
-                    massage:"Invalid email or password",
-                });
-            
-            }
+        const sql =
+        `INSERT INTO Users
+        (Name,Email,Password,Address,Role)
+        VALUES(?,?,?,?,?)`;
 
-            const token=jwt.sign(
-                {
-                    email:user.email
+        db.query(
+            sql,
+            [name,email,hashedPassword,address,"User"],
+            (err,result)=>{
+
+                if(err){
+                    return res.status(500).json(err);
                 }
-                ,process.env.JWT_SECRET,
-                {
-                    expiresIn:"1h"
+
+                res.status(201).json({
+                    message:"User Registered Successfully"
                 });
+            }
+        );
 
-            res.status(200).json({
-                success:true,
-                massage:"Login successful",
-                token,
-            });
-    }   catch(error){
+    } catch (error) {
 
-        console.error("Login Error");
-        console.error("Login error:",error);
-        res.status(500).json({
-            success:false,
-            massage:"Server error", 
-        });
+        res.status(500).json(error);
     }
-    
-    
-}
+};

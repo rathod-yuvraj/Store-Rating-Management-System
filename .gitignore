@@ -15,7 +15,7 @@ package-lock.json
 *.swo
 *~
 
-
+.env
 
 # Build outputs
 dist/
