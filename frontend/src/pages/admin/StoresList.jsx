@@ -163,7 +163,7 @@ function StoresList() {
 
                     </tr>
 
-                }
+              }
 
               </tbody>
 
