@@ -1,27 +1,34 @@
-module.exports = (sequelize, DataTypes) => {
-  const Store = sequelize.define("Store", {
+const { DataTypes } = require("sequelize");
+const { sequelize } = require("../config/db");
+
+const Store = sequelize.define(
+  "Store",
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true
+    },
+
     name: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(100),
       allowNull: false
     },
 
     email: {
       type: DataTypes.STRING,
-      unique: true
+      allowNull: false,
+      unique: true,
+      validate: {
+        isEmail: true
+      }
     },
 
     address: {
-      type: DataTypes.STRING(400)
+      type: DataTypes.STRING(400),
+      allowNull: false
     }
-  });
+  }
+);
 
-  return Store;
-};
-
-// module.exports = (sequelize, DataTypes) => {
-//   return sequelize.define("Store", {
-//     name: DataTypes.STRING,
-//     email: DataTypes.STRING,
-//     address: DataTypes.STRING
-//   });
-// };
+module.exports = Store;

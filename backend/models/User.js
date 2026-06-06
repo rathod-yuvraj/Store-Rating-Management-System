@@ -1,14 +1,30 @@
-module.exports = (sequelize, DataTypes) => {
-  const User = sequelize.define("User", {
+const { DataTypes } = require("sequelize");
+const { sequelize } = require("../config/db");
+
+const User = sequelize.define(
+  "User",
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true
+    },
+
     name: {
       type: DataTypes.STRING(60),
-      allowNull: false
+      allowNull: false,
+      validate: {
+        len: [20, 60]
+      }
     },
 
     email: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true
+      unique: true,
+      validate: {
+        isEmail: true
+      }
     },
 
     password: {
@@ -17,35 +33,19 @@ module.exports = (sequelize, DataTypes) => {
     },
 
     address: {
-      type: DataTypes.STRING(400)
+      type: DataTypes.STRING(400),
+      allowNull: false
     },
 
     role: {
       type: DataTypes.ENUM(
         "ADMIN",
         "USER",
-        "OWNER"
+        "STORE_OWNER"
       ),
       defaultValue: "USER"
     }
-  });
+  }
+);
 
-  return User;
-};
-
-
-// module.exports = (sequelize, DataTypes) => {
-//   return sequelize.define("User", {
-//     name: DataTypes.STRING,
-//     email: {
-//       type: DataTypes.STRING,
-//       unique: true
-//     },
-//     password: DataTypes.STRING,
-//     address: DataTypes.STRING,
-//     role: {
-//       type: DataTypes.ENUM("ADMIN","USER","OWNER"),
-//       defaultValue: "USER"
-//     }
-//   });
-// };
+module.exports = User;
