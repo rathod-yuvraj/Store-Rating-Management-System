@@ -1,9 +1,28 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-const { User } = require("../models");
+const {
+  User
+} = require("../models");
 
-exports.register = async (req, res) => {
+
+
+const generateToken = (id) => {
+
+  return jwt.sign(
+    { id },
+    process.env.JWT_SECRET,
+    {
+      expiresIn:
+        process.env.JWT_EXPIRE
+    }
+  );
+};
+
+
+
+exports.register =
+async (req, res) => {
 
   try {
 
@@ -20,36 +39,67 @@ exports.register = async (req, res) => {
       });
 
     if (existing) {
-
       return res.status(400).json({
-        message: "Email already exists"
+        message:
+          "Email already exists"
       });
-
     }
 
-    const hash =
-      await bcrypt.hash(password, 10);
+    const passwordRegex =
+      /^(?=.*[A-Z])(?=.*[\W_]).{8,16}$/;
 
-    await User.create({
-      name,
-      email,
-      password: hash,
-      address,
-      role: "USER"
-    });
+    if (
+      !passwordRegex.test(
+        password
+      )
+    ) {
+      return res.status(400).json({
+        message:
+          "Password must contain uppercase and special character"
+      });
+    }
+
+    const hashedPassword =
+      await bcrypt.hash(
+        password,
+        10
+      );
+
+    const user =
+      await User.create({
+
+        name,
+        email,
+
+        password:
+          hashedPassword,
+
+        address,
+
+        role: "USER"
+      });
 
     res.status(201).json({
-      message: "Registered Successfully"
+      message:
+        "Registration Successful",
+      token:
+        generateToken(user.id)
     });
 
-  } catch (err) {
+  } catch (error) {
 
-    res.status(500).json(err);
+    res.status(500).json({
+      message:
+        error.message
+    });
 
   }
 };
 
-exports.login = async (req, res) => {
+
+
+exports.login =
+async (req, res) => {
 
   try {
 
@@ -63,50 +113,54 @@ exports.login = async (req, res) => {
         where: { email }
       });
 
-    if (!user)
+    if (!user) {
       return res.status(400).json({
-        message: "Invalid Credentials"
+        message:
+          "Invalid Credentials"
       });
+    }
 
-    const valid =
+    const isMatch =
       await bcrypt.compare(
         password,
         user.password
       );
 
-    if (!valid)
+    if (!isMatch) {
       return res.status(400).json({
-        message: "Invalid Credentials"
+        message:
+          "Invalid Credentials"
       });
-
-    const token = jwt.sign(
-      {
-        id: user.id,
-        role: user.role
-      },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: "1d"
-      }
-    );
+    }
 
     res.json({
-      token,
-      role: user.role,
-      userId: user.id
+
+      token:
+        generateToken(user.id),
+
+      user: {
+
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
     });
 
-  } catch (err) {
+  } catch (error) {
 
-    res.status(500).json(err);
+    res.status(500).json({
+      message:
+        error.message
+    });
 
   }
 };
 
-exports.changePassword = async (
-  req,
-  res
-) => {
+
+
+exports.changePassword =
+async (req, res) => {
 
   try {
 
@@ -120,17 +174,32 @@ exports.changePassword = async (
         req.user.id
       );
 
-    const valid =
+    const match =
       await bcrypt.compare(
         oldPassword,
         user.password
       );
 
-    if (!valid)
+    if (!match) {
       return res.status(400).json({
         message:
-          "Old Password Incorrect"
+          "Old password incorrect"
       });
+    }
+
+    const passwordRegex =
+      /^(?=.*[A-Z])(?=.*[\W_]).{8,16}$/;
+
+    if (
+      !passwordRegex.test(
+        newPassword
+      )
+    ) {
+      return res.status(400).json({
+        message:
+          "Invalid new password format"
+      });
+    }
 
     user.password =
       await bcrypt.hash(
@@ -142,12 +211,15 @@ exports.changePassword = async (
 
     res.json({
       message:
-        "Password Updated"
+        "Password Updated Successfully"
     });
 
-  } catch (err) {
+  } catch (error) {
 
-    res.status(500).json(err);
+    res.status(500).json({
+      message:
+        error.message
+    });
 
   }
 };

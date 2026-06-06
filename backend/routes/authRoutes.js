@@ -1,26 +1,30 @@
 const router =
-  require("express").Router();
+require("express").Router();
+
+const authController =
+require("../controllers/authController");
 
 const auth =
-  require("../controllers/authController");
+require("../middleware/authMiddleware");
 
-const authMiddleware =
-  require("../middleware/authMiddleware");
+
 
 router.post(
   "/register",
-  auth.register
+  authController.register
 );
 
 router.post(
   "/login",
-  auth.login
+  authController.login
 );
+
+
 
 router.put(
   "/change-password",
-  authMiddleware,
-  auth.changePassword
+  auth,
+  authController.changePassword
 );
 
 module.exports = router;
