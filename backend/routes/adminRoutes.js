@@ -1,7 +1,7 @@
 const router =
 require("express").Router();
 
-const admin =
+const adminController =
 require("../controllers/adminController");
 
 const auth =
@@ -10,37 +10,48 @@ require("../middleware/authMiddleware");
 const role =
 require("../middleware/roleMiddleware");
 
+
+
 router.use(auth);
-router.use(role("ADMIN"));
+
+router.use(
+  role("ADMIN")
+);
+
+
 
 router.get(
   "/dashboard",
-  admin.dashboard
+  adminController.dashboard
 );
+
+
 
 router.post(
   "/users",
-  admin.addUser
-);
-
-router.post(
-  "/stores",
-  admin.addStore
+  adminController.addUser
 );
 
 router.get(
   "/users",
-  admin.getUsers
+  adminController.getUsers
 );
 
 router.get(
   "/users/:id",
-  admin.getUserDetails
+  adminController.getUserDetails
+);
+
+
+
+router.post(
+  "/stores",
+  adminController.addStore
 );
 
 router.get(
   "/stores",
-  admin.getStores
+  adminController.getStores
 );
 
 module.exports = router;

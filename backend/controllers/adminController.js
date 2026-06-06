@@ -7,11 +7,7 @@ const {
   Rating
 } = require("../models");
 
-/*
-=================================
-Dashboard
-=================================
-*/
+
 
 exports.dashboard = async (req, res) => {
 
@@ -32,20 +28,16 @@ exports.dashboard = async (req, res) => {
       totalRatings
     });
 
-  } catch (err) {
+  } catch (error) {
 
     res.status(500).json({
-      message: err.message
+      message: error.message
     });
 
   }
 };
 
-/*
-=================================
-Add User
-=================================
-*/
+
 
 exports.addUser = async (req, res) => {
 
@@ -64,12 +56,13 @@ exports.addUser = async (req, res) => {
         where: { email }
       });
 
-    if (exists)
+    if (exists) {
       return res.status(400).json({
         message: "Email already exists"
       });
+    }
 
-    const hash =
+    const hashedPassword =
       await bcrypt.hash(
         password,
         10
@@ -77,34 +70,40 @@ exports.addUser = async (req, res) => {
 
     const user =
       await User.create({
+
         name,
         email,
-        password: hash,
+
+        password:
+          hashedPassword,
+
         address,
         role
       });
 
-    res.status(201).json(user);
+    res.status(201).json({
+      message:
+        "User Created Successfully",
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
+    });
 
-  } catch (err) {
+  } catch (error) {
 
     res.status(500).json({
-      message: err.message
+      message: error.message
     });
 
   }
 };
 
-/*
-=================================
-Add Store
-=================================
-*/
 
-exports.addStore = async (
-  req,
-  res
-) => {
+
+exports.addStore = async (req, res) => {
 
   try {
 
@@ -115,49 +114,63 @@ exports.addStore = async (
       ownerId
     } = req.body;
 
+    const owner =
+      await User.findByPk(
+        ownerId
+      );
+
+    if (
+      !owner ||
+      owner.role !== "STORE_OWNER"
+    ) {
+      return res.status(400).json({
+        message:
+          "Invalid Store Owner"
+      });
+    }
+
     const store =
       await Store.create({
+
         name,
         email,
         address,
         ownerId
       });
 
-    res.status(201).json(store);
+    res.status(201).json({
+      message:
+        "Store Created Successfully",
+      store
+    });
 
-  } catch (err) {
+  } catch (error) {
 
     res.status(500).json({
-      message: err.message
+      message: error.message
     });
 
   }
 };
 
-/*
-=================================
-Users Listing
-=================================
-*/
 
-exports.getUsers = async (
-  req,
-  res
-) => {
+
+exports.getUsers = async (req, res) => {
 
   try {
 
     const {
+      page = 1,
+      limit = 10,
       name,
       email,
-      address,
       role,
       sort = "name",
       order = "ASC"
     } = req.query;
 
     const users =
-      await User.findAll({
+      await User.findAndCountAll({
 
         where: {
 
@@ -172,13 +185,6 @@ exports.getUsers = async (
             email: {
               [Op.like]:
                 `%${email}%`
-            }
-          }),
-
-          ...(address && {
-            address: {
-              [Op.like]:
-                `%${address}%`
             }
           }),
 
@@ -187,27 +193,50 @@ exports.getUsers = async (
           })
         },
 
+        attributes: {
+          exclude: ["password"]
+        },
+
+        limit:
+          Number(limit),
+
+        offset:
+          (page - 1) * limit,
+
         order: [
           [sort, order]
         ]
       });
 
-    res.json(users);
+    res.json({
 
-  } catch (err) {
+      total:
+        users.count,
+
+      page:
+        Number(page),
+
+      totalPages:
+        Math.ceil(
+          users.count /
+          limit
+        ),
+
+      users:
+        users.rows
+    });
+
+  } catch (error) {
 
     res.status(500).json({
-      message: err.message
+      message:
+        error.message
     });
 
   }
 };
 
-/*
-=================================
-User Details
-=================================
-*/
+
 
 exports.getUserDetails =
 async (req, res) => {
@@ -216,30 +245,36 @@ async (req, res) => {
 
     const user =
       await User.findByPk(
-        req.params.id
+        req.params.id,
+        {
+          attributes: {
+            exclude: ["password"]
+          }
+        }
       );
 
-    if (!user)
+    if (!user) {
+
       return res.status(404).json({
-        message: "User not found"
+        message:
+          "User not found"
       });
+
+    }
 
     res.json(user);
 
-  } catch (err) {
+  } catch (error) {
 
     res.status(500).json({
-      message: err.message
+      message:
+        error.message
     });
 
   }
 };
 
-/*
-=================================
-Stores Listing
-=================================
-*/
+
 
 exports.getStores =
 async (req, res) => {
@@ -247,6 +282,8 @@ async (req, res) => {
   try {
 
     const {
+      page = 1,
+      limit = 10,
       name,
       email,
       address,
@@ -255,7 +292,7 @@ async (req, res) => {
     } = req.query;
 
     const stores =
-      await Store.findAll({
+      await Store.findAndCountAll({
 
         where: {
 
@@ -281,17 +318,52 @@ async (req, res) => {
           })
         },
 
+        include: [
+          {
+            model: User,
+            as: "owner",
+            attributes: [
+              "id",
+              "name",
+              "email"
+            ]
+          }
+        ],
+
+        limit:
+          Number(limit),
+
+        offset:
+          (page - 1) * limit,
+
         order: [
           [sort, order]
         ]
       });
 
-    res.json(stores);
+    res.json({
 
-  } catch (err) {
+      total:
+        stores.count,
+
+      page:
+        Number(page),
+
+      totalPages:
+        Math.ceil(
+          stores.count /
+          limit
+        ),
+
+      stores:
+        stores.rows
+    });
+
+  } catch (error) {
 
     res.status(500).json({
-      message: err.message
+      message:
+        error.message
     });
 
   }
