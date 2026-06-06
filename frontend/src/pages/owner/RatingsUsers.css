@@ -1,0 +1,42 @@
+*{
+    box-sizing:border-box;
+}
+
+.ratings-container{
+    min-height:100vh;
+    background:#f4f6f9;
+    padding:30px;
+}
+
+.ratings-card{
+    background:white;
+    padding:25px;
+    border-radius:12px;
+    box-shadow:0 5px 15px rgba(0,0,0,.15);
+}
+
+.ratings-card h2{
+    margin-bottom:25px;
+    color:#333;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th{
+    background:#007bff;
+    color:white;
+    padding:15px;
+}
+
+td{
+    padding:15px;
+    border-bottom:1px solid #ddd;
+    text-align:center;
+}
+
+tr:hover{
+    background:#f8f9fa;
+}
