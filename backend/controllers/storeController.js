@@ -267,7 +267,40 @@ async (req, res) => {
         response
     });
 
-  } catch (error) {
+  } catch (error) {const { Op } = require("sequelize");
+
+const {
+  User,
+  Store,
+  Rating
+} = require("../models");
+
+/*
+=================================
+Get All Stores
+=================================
+*/
+exports.getAllStores = async (req, res) => {
+   // code
+};
+
+/*
+=================================
+Search Stores
+=================================
+*/
+exports.searchStore = async (req, res) => {
+   // paste searchStore code here
+};
+
+/*
+=================================
+Store Owner Dashboard
+=================================
+*/
+exports.ownerDashboard = async (req, res) => {
+   // paste ownerDashboard code here
+};
 
     res.status(500).json({
       message:
