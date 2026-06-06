@@ -12,8 +12,11 @@ from "../pages/Register";
 import Stores
 from "../pages/Stores";
 
+import AdminDashboard
+from "../pages/AdminDashboard";
 
-
+import OwnerDashboard
+from "../pages/OwnerDashboard";
 
 import ProtectedRoute
 from "../components/ProtectedRoute";
