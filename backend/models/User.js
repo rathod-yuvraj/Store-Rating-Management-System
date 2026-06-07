@@ -41,7 +41,7 @@ const User = sequelize.define(
       type: DataTypes.ENUM(
         "ADMIN",
         "USER",
-        "STORE_OWNER"
+        "OWNER"
       ),
       defaultValue: "USER"
     }

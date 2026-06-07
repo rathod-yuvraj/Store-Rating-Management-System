@@ -13,6 +13,9 @@ const storeRoutes =
 const ratingRoutes =
   require("./routes/ratingRoutes");
 
+const userRoutes =
+  require("./routes/userRoutes");
+
 const app = express();
 
 
@@ -46,6 +49,11 @@ app.use(
 app.use(
   "/api/store",
   storeRoutes
+);
+
+app.use(
+  "/api/user",
+  userRoutes
 );
 
 app.use(

@@ -121,7 +121,7 @@ exports.addStore = async (req, res) => {
 
     if (
       !owner ||
-      owner.role !== "STORE_OWNER"
+      owner.role !== "OWNER"
     ) {
       return res.status(400).json({
         message:

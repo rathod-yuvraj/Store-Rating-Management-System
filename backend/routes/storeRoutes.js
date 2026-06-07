@@ -31,7 +31,7 @@ router.get(
 router.get(
   "/owner-dashboard",
   auth,
-  role("STORE_OWNER"),
+  role("OWNER"),
   storeController.ownerDashboard
 );
 
